@@ -130,6 +130,9 @@
     <ClCompile Include="Datastructures.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Array.h" />
+    <ClInclude Include="BinaryTree.h" />
+    <ClInclude Include="HashMap.h" />
     <ClInclude Include="LinkedList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

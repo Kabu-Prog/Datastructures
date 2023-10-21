@@ -1,0 +1,1 @@
+- added a "delete" functionality to the linked list 2023/10/21

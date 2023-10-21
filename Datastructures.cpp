@@ -15,10 +15,41 @@ int main()
 
 	ll.AddAt(7, 4);
 
-	std::cout << ll;
+	ll.AddAt(8, 0);
 
-	ll.PrintWithIndex();
-	ll.PrintReverseWithIndex();
+	ll.AddAt(9, ll.getLength());
+
+	ll.ReplaceAt(200, 0);
+	ll.ReplaceAt(100, ll.getLength());
+	ll.ReplaceAt(300, 8);
+	ll.ReplaceAt(400, 2);
+
+	ll.Print();
+
+	ll.deleteAt(0);
+	ll.Print();
+
+	ll.deleteAt(ll.getLength());
+
+
+	ll.Print();
+
+	ll.deleteAt(2);
+	ll.deleteAt(4);
+
+	ll.Print();
+
+	ll.Add(3);
+	ll.Add(3);
+	ll.Add(3);
+	ll.Add(3);
+	ll.Add(3);
+	ll.Print();
+
+	ll.deleteValue(3);
+
+	ll.Print();
+
 
 
 

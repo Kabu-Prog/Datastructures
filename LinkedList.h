@@ -5,6 +5,7 @@
 template <typename T>
 class LinkedList
 {
+private:
 	template <typename T>
 	class Node
 	{
@@ -79,18 +80,46 @@ class LinkedList
 		}
 		else
 		{
-			os << "Keine Eintraege vorhanden.\n";
+			os << "Error: No entries.\n";
 		}
 		return os;
 	}
 
-	uint32_t getIndex()
+	void deleteNode(Node<T>* node)
 	{
-
+		bool isError = false;
+		if (node->getPrev() != nullptr && node->getNext() != nullptr)
+		{
+			node->getPrev()->setNext(node->getNext());
+			node->getNext()->setPrev(node->getPrev());
+			node->setNext(nullptr);
+			node->setPrev(nullptr);
+		}
+		else if (node->getPrev() == nullptr)
+		{
+			mFirstNode = node->getNext();
+			node->getNext()->setPrev(nullptr);
+			node->setNext(nullptr);
+		}
+		else if (node->getNext() == nullptr)
+		{
+			mLastNode = node->getPrev();
+			node->getPrev()->setNext(nullptr);
+			node->setPrev(nullptr);
+		}
+		else
+		{
+			std::cerr << "Error: Could not delete Node.";
+			isError = true;
+		}
+		if (!isError)
+		{
+			mIndex--;
+		}
 	}
 
-
 public:
+	// Adds a node at the end of the linked list
 	void Add(T value)
 	{
 		if (mFirstNode == nullptr)
@@ -108,15 +137,17 @@ public:
 		mIndex++;
 	}
 
-	void AddAt(T value, uint32_t index)
+	// Adds a node at the given position
+	void AddAt(T value, uint32_t position)
 	{
+		bool isError = false;
 		Node<T>* ptrNode;
-		if (index > 0 && index < mIndex)
+		if (position > 0 && position < mIndex-1)
 		{
-			if (index > mIndex / 2)
+			if (position > mIndex / 2)
 			{
 				ptrNode = mLastNode;
-				for (int i = mIndex; i > index; i--)
+				for (int i = mIndex; i > position; i--)
 				{
 					ptrNode = ptrNode->getPrev();
 				}
@@ -128,7 +159,7 @@ public:
 			else
 			{
 				ptrNode = mFirstNode;
-				for (int i = 0; i < index; i++)
+				for (int i = 0; i < position; i++)
 				{
 					ptrNode = ptrNode->getNext();
 				}
@@ -137,53 +168,199 @@ public:
 				ptrNode->setPrev(newNode);
 			}
 		}
+		else if (position == 0 && mIndex > 0)
+		{
+			Node<T>* newNode = new Node<T>(value, mFirstNode, nullptr);
+			mFirstNode->setPrev(newNode);
+			mFirstNode = newNode;
+		}
+		else if (mIndex == 0)
+		{
+			Add(value);
+		}
+		else if (position == mIndex)
+		{
+			Add(value);
+		}
 		else
 		{
-			std::cerr << "Fehler: Außerhalb des Index!";
+			std::cerr << "Error: Could not add. Position is out of range!\n";
+			isError = true;
 		}
-		mIndex++;
+		if (!isError)
+		{
+			mIndex++;
+		}
+		
 	}
 
-	// eigentlich würde es reichen den Wert zu überschreiben
-	void ReplaceAt(T value, uint32_t index)
+	// Overwrites the value of a node at the given position.
+	void ReplaceAt(T value, uint32_t position)
 	{
 		Node<T>* ptrNode;
-		if (index > 0 && index < mIndex)
+		if (position > 0 && position < mIndex - 1)
 		{
-			if (index > mIndex / 2)
+			if (position > mIndex / 2)
 			{
 				ptrNode = mLastNode;
-				for (int i = mIndex; i > index; i--)
+				for (int i = mIndex; i > position; i--)
 				{
 					ptrNode = ptrNode->getPrev();
 				}
-				Node<T>* newNode = new Node<T>(value, ptrNode->getNext(), ptrNode->getPrev());
-				ptrNode->getPrev()->setNext(newNode);
-				ptrNode->getNext()->setPrev(newNode);
-
+				ptrNode->setValue(value);
 			}
 			else
 			{
 				ptrNode = mFirstNode;
-				for (int i = 0; i < index; i++)
+				for (int i = 0; i < position; i++)
 				{
 					ptrNode = ptrNode->getNext();
 				}
-				Node<T>* newNode = new Node<T>(value, ptrNode->getNext(), ptrNode->getPrev());
-				ptrNode->getPrev()->setNext(newNode);
-				ptrNode->getNext()->setPrev(newNode);
+				ptrNode->setValue(value);
 			}
-			~ptrNode();
+		}
+		else if (position == 0 && mIndex > 0)
+		{
+			mFirstNode->setValue(value);
+		}
+		else if (mIndex == 0)
+		{
+			Add(value);
+		}
+		else if (position == mIndex)
+		{
+			mLastNode->setValue(value);
 		}
 		else
 		{
-			std::cerr << "Fehler: Außerhalb des Index!";
+			std::cerr << "Error: Could not replace. Position is out of range!\n";
+		}
+	}
+
+	// Returns the length of the linked list as an integer
+	int getLength()
+	{
+		return mIndex;
+	}
+
+	// Deletes the node at the given position
+	void deleteAt(int position)
+	{
+		Node<T>* ptrNode;
+		if (position > mIndex / 2)
+		{
+			ptrNode = mLastNode;
+			for (int i = mIndex; i > position; i--)
+			{
+				ptrNode = ptrNode->getPrev();
+			}
+			deleteNode(ptrNode);
+		}
+		else
+		{
+			ptrNode = mFirstNode;
+			for (int i = 0; i < position; i++)
+			{
+				ptrNode = ptrNode->getNext();
+			}
+			deleteNode(ptrNode);
 		}
 
 	}
+	// Delete an amount of nodes
+	// amount is the number of nodes to be deleted
+	// fromStart deceides if it deletes the nodes from the beginning or the end of the linked list
+	void deleteAmount(int amount, bool fromStart)
+	{
+		if (amount < mIndex)
+		{
+			if (fromStart)
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					mFirstNode = mFirstNode->getNext();
+				}
+				mFirstNode->getPrev()->setNext(nullptr);
+				mFirstNode->setPrev(nullptr);
+			}
+			else
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					mLastNode = mLastNode->getPrev();
+				}
+				mLastNode->getNext()->setPrev(nullptr);
+				mLastNode->setNext(nullptr);
+			}
+			mIndex -= amount;
+		}
+		else
+		{
+			std::cerr << "Error: Could not delete " << amount << " nodes. The length of the linked list is " << mIndex << ". Do you want to delete all? y/n";
+			std::string answer = "";
+			while (answer != "y" || answer != "n" || answer != "Y" || answer != "N")
+			{
+				std::cin >> answer;
+				if (answer == "y" || answer == "Y")
+				{
+					deleteAll();
+				}
+				else if (answer == "n" || answer == "N")
+				{
+					std::cerr << "Canceled function 'deleteAmount'.";
+				}
+				else
+				{
+					std::cerr << "Wrong input. Please input 'y' or 'n'.";
+				}
+			}
+			
+		}
+	}
+	// Deletes all nodes
+	void deleteAll()
+	{
+		mFirstNode = nullptr;
+		mLastNode = nullptr;
+		mIndex = 0;
+	}
+
+	// deletes all nodes with the given value.
+	void deleteValue(T value)
+	{
+		Node<T>* ptrNode = mFirstNode;
+		int found = 0;
+		int index = 0;
+		int length = mIndex;
+
+		while(ptrNode != nullptr)
+		{
+			if (ptrNode->getValue() == value)
+			{
+				Node<T>* dNode = ptrNode;
+				ptrNode = ptrNode->getNext();
+				deleteNode(dNode);
+				found++;
+			}
+			else
+			{
+				ptrNode = ptrNode->getNext();
+			}
+			index++;
+		}
+		if (found == 0)
+		{
+			std::cout << "No entries with the value '" << value << "' found.\n";
+		}
+		else
+		{
+			std::cout << "Deleted " << found << " entries.\n";
+		}
+	}
+
 
 	// ToDo: 
-	// - Entfernen von Elementen 
+
 	// - Zugriff auf Element nach Position
 	// - Zugriff auf Element nach Inhalt
 	// - Überprüfen ob Liste leer ist
@@ -199,7 +376,7 @@ public:
 	{
 		if (mFirstNode == nullptr)
 		{
-			std::cerr << "Keinen Inhalt gefunden";
+			std::cerr << "Error: No entries!\n";
 		}
 		else
 		{
@@ -218,7 +395,7 @@ public:
 		uint32_t index = 0;
 		if (mFirstNode == nullptr)
 		{
-			std::cerr << "Keinen Inhalt gefunden";
+			std::cerr << "Error: No entries!\n";
 		}
 		else
 		{
@@ -236,7 +413,7 @@ public:
 	{
 		if (mFirstNode == nullptr)
 		{
-			std::cerr << "Keinen Inhalt gefunden";
+			std::cerr << "Error: No entries!\n";
 		}
 		else
 		{
@@ -255,7 +432,7 @@ public:
 		uint32_t index = mIndex -1;
 		if (mFirstNode == nullptr)
 		{
-			std::cerr << "Keinen Inhalt gefunden";
+			std::cerr << "Error: No entries!\n";
 		}
 		else
 		{
