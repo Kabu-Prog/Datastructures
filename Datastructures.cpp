@@ -12,6 +12,8 @@ int main()
 	ll.Add("5");
 	ll.Add("6");
 
+	ll.ReplaceAt("Z", 6);
+
 	ll.SwapPosition(1, 0);
 
 	ll.Print();
@@ -27,6 +29,8 @@ int main()
 	ll.invertList();
 
 	ll.AddAt("ABC", 5);
+
+	ll.AddAt("XYZ", 0);
 
 	ll.deleteAmount(3, false);
 

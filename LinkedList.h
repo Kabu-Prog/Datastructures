@@ -1,10 +1,6 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
-
-
-//ToDO: Andere Struktur. Statt 15 x delete, etc. zu haben w‰re es besser so etwas wie "search by value" oder "search by position" und anschlieﬂend die T‰tigkeit "delete", "swap", "replace", "edit", ...
-
 template <typename T>
 class LinkedList
 {
@@ -285,13 +281,13 @@ private:
 			}
 			else if (node->getPrev() == nullptr)
 			{
-				mFirstNode = node->getNext();
+				setFirstNode(node->getNext());
 				node->getNext()->setPrev(nullptr);
 				node->setNext(nullptr);
 			}
 			else if (node->getNext() == nullptr)
 			{
-				mLastNode = node->getPrev();
+				setLastNode(node->getPrev());
 				node->getPrev()->setNext(nullptr);
 				node->setPrev(nullptr);
 			}
@@ -302,7 +298,7 @@ private:
 			}
 			if (!isError)
 			{
-				mIndex--;
+				setIndex(getIndex() - 1);
 			}
 		}
 		else
@@ -313,13 +309,13 @@ private:
 	}
 
 
-	//TODO: MergeSort
+	//TODO: work in progress
 	Node<T>* MergeSort(Node<T>* firstNode)
 	{
 		bool print = true;
 
-		Node<T>* firstHalf = firstNode;
-		Node<T>* secondHalf = firstNode;
+		Node<T>* firstHalf = getFirstNode();
+		Node<T>* secondHalf = getFirstNode();
 
 		while(secondHalf != nullptr && secondHalf->getNext() != nullptr)
 		{
@@ -332,7 +328,7 @@ private:
 		}
 
 		secondHalf = firstHalf->getNext();
-		firstHalf = firstNode;
+		firstHalf = getFirstNode();
 		secondHalf->getPrev()->setNext(nullptr);
 		secondHalf->setPrev(nullptr);
 
@@ -409,6 +405,7 @@ private:
 
 
 public:
+	//TODO: work in progress
 	void MergeSort(LinkedList<T>& ll)
 	{
 		MergeSort(ll.getFirstNode());
@@ -445,9 +442,9 @@ public:
 	void AddAt(T value, uint32_t position)
 	{
 		bool isError = false;
-		uint32_t index = getIndex();
+		uint32_t index = getIndex()-1;
 		Node<T>* ptrNode = nullptr;
-		if (position > 0 && position < index - 1)
+		if (position > 0 && position < index)
 		{
 			if (position > index / 2)
 			{
@@ -500,48 +497,41 @@ public:
 	}
 
 
-	// Overwrites the value of a node at the given position.
+	// Replaces a node. 
 	void ReplaceAt(T value, uint32_t position)
 	{
-		uint32_t index = getIndex();
-		Node<T>* ptrNode = nullptr;
-		if (position > 0 && position > index - 1)
+		Node<T>* ptrNode = findNodeByPosition(position);
+
+		if (ptrNode != nullptr)
 		{
-			if (position > index / 2)
+			Node<T>* newNode = new Node<T>(value, nullptr, nullptr);
+
+			if (ptrNode->getNext() != nullptr)
 			{
-				ptrNode = mLastNode;
-				for (int i = index; i > position; i--)
-				{
-					ptrNode = ptrNode->getPrev();
-				}
-				ptrNode->setValue(value);
+				newNode->setNext(ptrNode->getNext());
+				ptrNode->getNext()->setPrev(newNode);
 			}
 			else
 			{
-				ptrNode = mFirstNode;
-				for (int i = 0; i < position; i++)
-				{
-					ptrNode = ptrNode->getNext();
-				}
-				ptrNode->setValue(value);
+				setLastNode(newNode);
 			}
-		}
-		else if (position == 0 && index > 0)
-		{
-			mFirstNode->setValue(value);
-		}
-		else if (index == 0)
-		{
-			std::cerr << "Error: Could not replace. The list seems to be empty!\n";
-		}
-		else if (position == index)
-		{
-			mLastNode->setValue(value);
+
+			if (ptrNode->getPrev() != nullptr)
+			{
+				newNode->setPrev(ptrNode->getPrev());
+				ptrNode->getPrev()->setNext(newNode);
+			}
+			else
+			{
+				setFirstNode(newNode);
+			}
 		}
 		else
 		{
-			std::cerr << "Error: Could not replace. Position is out of range!\n";
+			std::cerr << "Position returns null.\n";
 		}
+
+	
 	}
 
 	// Returns the length of the linked list as an integer
@@ -557,7 +547,7 @@ public:
 		Node<T>* ptrNode = nullptr;
 		if (position > mIndex / 2)
 		{
-			ptrNode = mLastNode;
+			ptrNode = getLastNode();
 			for (uint32_t i = mIndex; i > position; i--)
 			{
 				ptrNode = ptrNode->getPrev();
@@ -672,7 +662,7 @@ public:
 	// Returns true if the list is empty
 	bool isEmpty()
 	{
-		if (mFirstNode == nullptr)
+		if (getFirstNode() == nullptr)
 		{
 			return true;
 		}
@@ -685,9 +675,9 @@ public:
 	// Inverts the list.
 	void invertList()
 	{
-		Node<T>* ptrNode = mLastNode;
-		mLastNode = mFirstNode;
-		mFirstNode = ptrNode;
+		Node<T>* ptrNode = getLastNode();
+		setLastNode(mFirstNode);
+		setFirstNode(ptrNode);
 
 		while (ptrNode != nullptr)
 		{
